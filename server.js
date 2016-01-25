@@ -8,7 +8,7 @@ var mongoose = require("mongoose");
 var passport = require("passport");
 var flash = require("connect-flash");
 var jwt = require("express-jwt");
-var env = require("./env")
+var env = require("./env");
 
 var morgan = require("morgan");
 var cookieParser = require("cookie-parser");
@@ -21,8 +21,9 @@ var configDB = require("./config/database.js");
 mongoose.connect(configDB.url); //Connects to default connection pool - dev only
 
 var jwtCheck = jwt({
-  secret: new Buffer()
-})
+  secret: new Buffer(env.auth0.secret, "base64"),
+  audience: env.auth0.id
+});
 
 //require("./config/passport")(passport);
 
@@ -36,6 +37,7 @@ app.use(session({secret: "notaverygoodsecret"})); // needs to be updated for pro
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
+app.use("/api", jwtCheck);
 
 // routes =========================
 require("./app/routes.js")(app, passport);
