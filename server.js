@@ -7,6 +7,8 @@ var port = process.env.PORT || 4200;
 var mongoose = require("mongoose");
 var passport = require("passport");
 var flash = require("connect-flash");
+var jwt = require("express-jwt");
+var env = require("./env")
 
 var morgan = require("morgan");
 var cookieParser = require("cookie-parser");
@@ -17,6 +19,10 @@ var configDB = require("./config/database.js");
 
 // configuration =========================
 mongoose.connect(configDB.url); //Connects to default connection pool - dev only
+
+var jwtCheck = jwt({
+  secret: new Buffer()
+})
 
 //require("./config/passport")(passport);
 
