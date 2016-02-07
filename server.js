@@ -1,7 +1,7 @@
 // setup =========================
 // require dependencies
 
-var express = require("express");
+var express = require("express")
 var app = express();
 var port = process.env.PORT || 4200;
 var mongoose = require("mongoose");
@@ -20,10 +20,10 @@ var configDB = require("./config/database.js");
 // configuration =========================
 mongoose.connect(configDB.url); //Connects to default connection pool - dev only
 
-var jwtCheck = jwt({
-  secret: new Buffer(env.auth0.secret, "base64"),
-  audience: env.auth0.id
-});
+// var jwtCheck = jwt({
+//   secret: new Buffer(env.auth0.secret, "base64"),
+//   audience: env.auth0.id
+// });
 
 //require("./config/passport")(passport);
 
@@ -37,7 +37,12 @@ app.use(session({secret: "notaverygoodsecret"})); // needs to be updated for pro
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
-app.use("/api", jwtCheck);
+// app.use("/api", jwtCheck);
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 // routes =========================
 require("./app/routes.js")(app, passport);
