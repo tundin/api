@@ -61,7 +61,7 @@ var seedChannels = function(num) {
         tags: getRandomSubarray(tags, Math.floor(Math.random()* (5) + 1))
       });
       newChannel.save(function(err, channel){
-        if (!err) console.log("post saved: ", channel);
+        if (!err) console.log("channel saved: ", channel);
         else console.log(err);
       });
     }
