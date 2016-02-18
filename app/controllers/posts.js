@@ -1,4 +1,7 @@
 var Post = require("../models/post");
+var multiparty = require("multiparty");
+var azure = require("azure-storage");
+var blobService = azure.createBlobService();
 
 var postsController = {
   postFinder: function(req, res, next, id){
@@ -30,19 +33,45 @@ var postsController = {
     })
   },
   create: function(req, res) {
-    console.log("Post request body:", req.body);
-    var post = new Post();
 
-    post.title = req.body.title;
-    post.body = req.body.body;
-    // post.author = req.currentUser; TODO: Add logic for authorship assignment
-    // post.tags = req.body.tags;
-    post.save(function(err, post){
-      if (err) {
-        res.send(err);
-      }
-      res.json(post);
+    // File upload
+
+    console.log("========================");
+
+    var blobService = azure.createBlobService();
+    var form = new multiparty.Form();
+
+    form.on('part', function(part) {
+      if (!part.filename) return;
+
+      var size = part.byteCount;
+      var name = part.filename;
+      var container = 'blobContainerName';
+
+       blobService.createBlockBlobFromStream("images", name, part, size, function(error) {
+        if (error) {
+          // error handling
+        }
+      });
     });
+
+    form.parse(req);
+
+    res.send({"msg": 'File uploaded successfully'});
+
+
+    // var post = new Post();
+    //
+    // post.title = req.body.title;
+    // post.body = req.body.body;
+    // // post.author = req.currentUser; TODO: Add logic for authorship assignment
+    // // post.tags = req.body.tags;
+    // post.save(function(err, post){
+    //   if (err) {
+    //     res.send(err);
+    //   }
+    //   res.json(post);
+    // });
   },
   show: function(req, res){
     res.json(req.post);

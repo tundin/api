@@ -29,7 +29,8 @@ mongoose.connect(configDB.url); //Connects to default connection pool - dev only
 
 app.use(morgan("dev"));
 app.use(cookieParser());
-app.use(bodyParser()); // deprecated bodyParser: use individual json/urlencoded middlewares
+app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: false }))
 
 app.set("view engine", "jade");
 
@@ -43,6 +44,12 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
+
+app.all('/', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  next();
+ });
 
 // routes =========================
 require("./app/routes.js")(app, passport);
