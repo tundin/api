@@ -67,5 +67,3 @@ var seedChannels = function(num) {
     }
   });
 };
-
-seedChannels(4);

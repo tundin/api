@@ -1,4 +1,5 @@
 var Post = require("../models/post");
+var Tag = require("../models/tag")
 var multiparty = require("multiparty");
 var azure = require("azure-storage");
 var blobService = azure.createBlobService();
@@ -9,7 +10,6 @@ var postsController = {
       if (err) {
         res.send(err); // TODO: handle this better
       } else if (post) {
-        console.log("postFinder found post with id ", id, ": ", post);
         req.post = post;
         next();
       } else {
@@ -18,12 +18,10 @@ var postsController = {
     })
   },
   index: function(req, res){ // TODO: refactor and lock down
-    console.log("request query: ", req.query);
     if (Object.keys(req.query).length > 0){
       var searchQuery = {};
       if (req.query.posts) searchQuery._id = { $in : req.query.posts };
       if (req.query.tags) searchQuery.tags = { $in : req.query.tags };
-      console.log("search query: ", searchQuery);
     }
     Post.find(searchQuery || {}, function(err, posts){
       if (err) {
@@ -36,42 +34,68 @@ var postsController = {
 
     // File upload
 
-    console.log("========================");
-
     var blobService = azure.createBlobService();
     var form = new multiparty.Form();
+    var post = new Post({ author: req.user.sub });
+    var fileStatuses = {reqParsed: false};
+    console.log("req: ========================");
 
-    form.on('part', function(part) {
-      if (!part.filename) return;
 
-      var size = part.byteCount;
-      var name = part.filename;
-      var container = 'blobContainerName';
-
-       blobService.createBlockBlobFromStream("images", name, part, size, function(error) {
-        if (error) {
-          // error handling
-        }
-      });
+    form.on("field", function(key, value) {
+      console.log(key, ":", value);
+      post[key] = (key === "tags") ? JSON.parse(value) : value;
     });
 
+    form.on('part', function(part) {
+      if (!part.filename) return
+      fileStatuses[part.filename] = false;
+      var size = part.byteCount;
+      var name = req.user.sub + "/" + part.filename;
+      var container = 'blobContainerName';
+
+      // response sent after response recieved from azure -- this needs some work and the async could get messy quick
+      blobService.createBlockBlobFromStream("images", name, part, size, function(error, result, azureResponse) {
+        if (error) {
+          fileStatuses[part.filename] = {"error": error}
+        } else {
+          fileStatuses[part.filename] = ("https://tundinmedia.blob.core.windows.net/images/" + result);
+        }
+        var fileNames = Object.keys(fileStatuses)
+        if (fileStatuses.reqParsed && fileNames.every(function(fileName){return fileStatuses[fileName]})){
+
+          post.imgUrls = fileNames.filter(function(fileName){
+            var fileStatus = fileStatuses[fileName];
+            if (typeof fileStatus !== "string" && fileStatus !== "reqParsed" ){
+              res.status(500);
+              res.append("Warning", "Error in uploading " + fileName);
+              return false;
+            } else {
+              return true;
+            }
+          }).map(function(fileName){
+            return fileStatuses[fileName];
+          });
+          console.log("post pre-save:", post);
+          post.save(function(err, post){
+            if (err) {
+              res.status(500);
+              res.json(err);
+            } else {
+              res.status(200);
+              res.json(post);
+            }
+          });
+
+        }
+      });
+
+    });
+
+    form.on("close", function(){
+      fileStatuses.reqParsed = true;
+    })
+
     form.parse(req);
-
-    res.send({"msg": 'File uploaded successfully'});
-
-
-    // var post = new Post();
-    //
-    // post.title = req.body.title;
-    // post.body = req.body.body;
-    // // post.author = req.currentUser; TODO: Add logic for authorship assignment
-    // // post.tags = req.body.tags;
-    // post.save(function(err, post){
-    //   if (err) {
-    //     res.send(err);
-    //   }
-    //   res.json(post);
-    // });
   },
   show: function(req, res){
     res.json(req.post);

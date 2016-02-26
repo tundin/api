@@ -6,7 +6,6 @@ var tagsController = {
       if (err) {
         res.send(err); // TODO: handle this better
       } else if (tag) {
-        console.log("tagFinder found tag with id ", id, ": ", tag);
         req.tag = tag;
         next();
       } else {
@@ -23,7 +22,6 @@ var tagsController = {
     })
   },
   create: function(req, res) {
-    console.log("Tag request body:", req.body);
     var tag = new Tag({
       name: req.body.name,
       description: req.body.description

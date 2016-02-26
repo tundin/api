@@ -4,13 +4,23 @@ var postsController = require("../controllers/posts")
 var tagsController = require("../controllers/tags")
 var channelsController = require("../controllers/channels")
 
+
+var env = require("../../env.js")
+
+var jwt = require("express-jwt");
+
+var jwtCheck = jwt({
+  secret: new Buffer(env.auth0.secret, "base64"),
+  audience: env.auth0.id
+});
+
 // Post Routes
 
 router.param("post_id", postsController.postFinder);
 
 router.route("/posts")
   .get(postsController.index)
-  .post(postsController.create);
+  .post(jwtCheck, postsController.create);
 
 router.route("/posts/:post_id")
   .get(postsController.show)

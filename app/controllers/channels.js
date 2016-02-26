@@ -6,7 +6,6 @@ var channelsController = {
       if (err) {
         res.send(err); // TODO: handle this better
       } else if (channel) {
-        console.log("channelFinder found channel with id ", id, ": ", channel);
         req.channel = channel;
         next();
       } else {
@@ -23,7 +22,6 @@ var channelsController = {
     })
   },
   create: function(req, res) {
-    console.log("Channel request body:", req.body);
     var channel = new Channel({
       name: req.body.name,
       description: req.body.description,

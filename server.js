@@ -7,7 +7,7 @@ var port = process.env.PORT || 4200;
 var mongoose = require("mongoose");
 var passport = require("passport");
 var flash = require("connect-flash");
-var jwt = require("express-jwt");
+// var jwt = require("express-jwt");
 var env = require("./env");
 
 var morgan = require("morgan");
@@ -38,10 +38,12 @@ app.use(session({secret: "notaverygoodsecret"})); // needs to be updated for pro
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
-// app.use("/api", jwtCheck);
+
+
+
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
   next();
 });
 
