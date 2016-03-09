@@ -1,5 +1,6 @@
 // setup =========================
 // require dependencies
+require("babel-polyfill");
 
 var express = require("express")
 var app = express();
@@ -18,6 +19,9 @@ var session = require("express-session");
 
 var configDB = require("./config/database.js");
 
+var { getTranslations } = require("./app/middleware/bridge")
+
+getTranslations();
 // configuration =========================
 mongoose.connect(configDB.url); //Connects to default connection pool - dev only
 
@@ -26,34 +30,13 @@ mongoose.connect(configDB.url); //Connects to default connection pool - dev only
 //   audience: env.auth0.id
 // });
 
-//require("./config/passport")(passport);
-
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }))
 
 app.set("view engine", "jade");
 
-app.use(session({secret: "notaverygoodsecret"})); // needs to be updated for production: https://github.com/expressjs/session#sessionoptions TODO: undefined resave option; provide resave option TODO: undefined saveUninitialized option; provide saveUninitialized option
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(flash());
-
-
 app.use(cors());
-
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-//   next();
-// });
-
-app.all('/', function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  next();
- });
 
 // routes =========================
 require("./app/routes.js")(app, passport);

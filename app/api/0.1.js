@@ -10,8 +10,8 @@ var env = require("../../env.js")
 var jwt = require("express-jwt");
 
 var jwtCheckConfig = {
-  secret: new Buffer(env.auth0.secret, "base64"),
-  audience: env.auth0.id
+  secret: new Buffer(process.env.AUTH0_SECRET, "base64"),
+  audience: process.env.AUTH0_ID
 };
 
 var jwtCheck = jwt(jwtCheckConfig)
