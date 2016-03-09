@@ -9,10 +9,19 @@ var env = require("../../env.js")
 
 var jwt = require("express-jwt");
 
-var jwtCheck = jwt({
+var jwtCheckConfig = {
   secret: new Buffer(env.auth0.secret, "base64"),
   audience: env.auth0.id
-});
+};
+
+var jwtCheck = jwt(jwtCheckConfig)
+
+var jwtCheckNotReq = jwt(Object.assign(
+  {},
+  jwtCheckConfig,
+  { credentialsRequired: false }
+))
+
 
 // Post Routes
 
@@ -45,7 +54,7 @@ router.route("/tags/:tag_id")
 router.param("channel_id", channelsController.channelFinder);
 
 router.route("/channels")
-  .get(channelsController.index)
+  .get(jwtCheckNotReq, channelsController.index)
   .post(channelsController.create);
 
 router.route("/channels/:channel_id")

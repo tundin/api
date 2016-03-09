@@ -9,11 +9,12 @@ var channelsController = {
         req.channel = channel;
         next();
       } else {
-        res.send("No channel with such id"); // TODO: hanle this too
+        res.send("No channel with such id"); // TODO: handle this too
       }
     })
   },
   index: function(req, res){
+    console.log("req.user:", req.user);
     Channel.find({}, function(err, channels){
       if (err) {
         res.send(err);

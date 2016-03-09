@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var tagSchema = new Schema({
-  _id: String,
+  _id: {type: String, match: /^[a-z0-9-]*$/},
   description: String
 });
 
@@ -11,7 +11,7 @@ tagSchema.virtual("name").get(function() {
 });
 
 tagSchema.virtual("name").set(function(name) {
-  this._id = name;
+  this._id = name
 });
 
 

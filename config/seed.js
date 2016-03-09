@@ -12,7 +12,7 @@ var seedTags = function(num){
   Tag.remove({}, function(err){
     for (var i = 0; i < num; i += 1) {
       Tag.create({
-        name: "Tag " + i,
+        name: "tag-" + i,
         description: "Seeded generic tag no. " + i
       }, function(err, tag){
         if (err){
@@ -57,7 +57,7 @@ var seedChannels = function(num) {
     if (err) return console.log(err);
     for (var i = 0; i < num; i += 1){
       newChannel = new Channel({
-        name: "Channel" + i,
+        name: "Channel " + i,
         tags: getRandomSubarray(tags, Math.floor(Math.random()* (5) + 1))
       });
       newChannel.save(function(err, channel){
@@ -67,3 +67,5 @@ var seedChannels = function(num) {
     }
   });
 };
+
+seedArticles(12);

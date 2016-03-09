@@ -7,6 +7,7 @@ var port = process.env.PORT || 4200;
 var mongoose = require("mongoose");
 var passport = require("passport");
 var flash = require("connect-flash");
+var cors = require("cors")
 // var jwt = require("express-jwt");
 var env = require("./env");
 
@@ -40,12 +41,13 @@ app.use(passport.session());
 app.use(flash());
 
 
+app.use(cors());
 
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  next();
-});
+// app.use(function(req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+//   next();
+// });
 
 app.all('/', function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost");
