@@ -5,7 +5,6 @@ var express = require("express")
 var app = express();
 var port = process.env.PORT || 4200;
 var mongoose = require("mongoose");
-var passport = require("passport");
 var flash = require("connect-flash");
 var cors = require("cors")
 var env = require("./env");
@@ -29,7 +28,7 @@ app.set("view engine", "jade");
 app.use(cors());
 
 // routes =========================
-require("./app/routes.js")(app, passport);
+require("./app/routes.js")(app);
 
 // launch =========================
 app.listen(port);

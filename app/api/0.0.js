@@ -3,7 +3,7 @@ var router = express.Router();
 var postsController = require("../controllers/posts")
 var tagsController = require("../controllers/tags")
 var channelsController = require("../controllers/channels")
-
+var translationsController = require("../controllers/translations")
 
 var env = require("../../env.js")
 
@@ -62,5 +62,9 @@ router.route("/channels/:channel_id")
   .put(channelsController.update)
   .delete(channelsController.destroy)
 
+// Translation Routes
+
+router.route("/translations")
+  .get(translationsController.index)
 
 module.exports = router;

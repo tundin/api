@@ -1,6 +1,6 @@
-var apiRouter = require("./api/0.1")
+var apiRouter = require("./api/0.0")
 
-module.exports = function(app, passport){
+module.exports = function(app){
   app.get('/', function(req, res){
     res.render('index');
   });
