@@ -19,6 +19,10 @@ var configDB = require("./config/database.js");
 // configuration =========================
 mongoose.connect(configDB.url); //Connects to default connection pool - dev only
 
+import { fetchTranslations } from "./app/middleware/bridge"
+
+fetchTranslations()
+
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(bodyParser.json());

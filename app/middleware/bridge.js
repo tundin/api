@@ -12,7 +12,7 @@ export function getChannels() {
 }
 
 
-export function getTranslations(channel = "tundin-test-project-general") {
+export function fetchTranslations(channel = "tundin-test-project-general") {
   fetch(`https://bridge-api.meedan.com/api/translations?channel_uuid=${channel}`, {
     method : "get",
     headers : {
@@ -21,13 +21,21 @@ export function getTranslations(channel = "tundin-test-project-general") {
   }).then(res => res.json()).then(res => {
     res.data.map( translation => {
       Translation.create({
-        author: "twitter|" + translation.author.id, //TODO: fix this shit pronto
+        author: "twitter|" + translation.author.id, //TODO: fix (check auth0) this shit pronto
         _id: translation.id,
-        embed_url: translation.embed_url,
-        published: translation.published
+        source: translation.post_uuid,
+        lang: {
+          to: translation.lang,
+          from: translation.source.lang
+        },
+        published: {
+          translation: translation.published * 1000, //Date comes in as seconds -- needs to be ms
+          source: translation.source.published * 1000
+        }
       }, function(err, translation) {
         if (err){
           return err
+
         }
         console.log(translation);
       })
