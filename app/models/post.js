@@ -7,6 +7,8 @@ var postSchema = new Schema({
   imgUrls: [{type: String, req: true}],
   author: {type: String, ref: "User"},
   tags: [{type: String, ref: "Tag"}],
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model("Post", postSchema);

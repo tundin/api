@@ -4,6 +4,8 @@ var Schema = mongoose.Schema;
 var tagSchema = new Schema({
   _id: {type: String, match: /^[a-z0-9-]*$/},
   description: String
+}, {
+  timestamps: true
 });
 
 tagSchema.virtual("name").get(function() {

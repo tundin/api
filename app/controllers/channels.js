@@ -15,13 +15,15 @@ var channelsController = {
   },
   index: function(req, res){
     console.log("req.user:", req.user);
-    Channel.find({}, function(err, channels){
-      if (err) {
-        res.send(err);
-      }
-      res.json(channels);
-    })
-  },
+    Channel.find({})
+      .populate('tags')
+      .exec(function(err, channels){
+        if (err) {
+          res.send(err);
+        }
+        res.json(channels);
+      })
+    },
   create: function(req, res) {
     var channel = new Channel({
       name: req.body.name,

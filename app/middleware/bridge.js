@@ -21,9 +21,10 @@ export function fetchTranslations(channel = "tundin-test-project-general") {
   }).then(res => res.json()).then(res => {
     res.data.map( translation => {
       Translation.create({
-        author: "twitter|" + translation.author.id, //TODO: fix (check auth0) this shit pronto
+        author: "twitter|" + translation.author.id, //TODO: fix (check auth0? big hassel) this shit pronto
         _id: translation.id,
         source: translation.post_uuid,
+        text: translation.text,
         lang: {
           to: translation.lang,
           from: translation.source.lang

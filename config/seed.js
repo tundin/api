@@ -7,6 +7,7 @@ var Channel = require("../app/models/channel")
 mongoose.connect(require("./database").url)
 
 
+
 // Create Tags
 var seedTags = function(num){
   Tag.remove({}, function(err){
@@ -68,4 +69,4 @@ var seedChannels = function(num) {
   });
 };
 
-seedArticles(12);
+seedArticles(10)

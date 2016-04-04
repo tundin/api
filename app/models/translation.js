@@ -5,6 +5,7 @@ var translationSchema = new Schema({
   author: {type: String, req: true},
   _id: {type: Number, req: true, unique: true},
   source: {type: String, req: true},
+  text: {type: String, req: true},
   lang: {
     to: {type: String, req: true},
     from: {type: String, req: true}
@@ -13,6 +14,8 @@ var translationSchema = new Schema({
     translation: {type: Date, req: true},
     source: {type: Date, req: true}
   }
+}, {
+  timestamps: true
 })
 
 module.exports = mongoose.model("Translation", translationSchema)

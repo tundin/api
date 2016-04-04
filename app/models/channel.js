@@ -6,6 +6,8 @@ var channelSchema = new Schema({
   description: String,
   author: {type: String, ref: "User"},
   tags: [{type: String, ref: "Tag"}]
+}, {
+  timestamps: true
 });
 
 channelSchema.virtual("name").get(function() {
