@@ -8,6 +8,10 @@ var translationsController = require("../controllers/translations")
 var env = require("../../env.js")
 
 var jwt = require("express-jwt");
+var multer = require("multer");
+
+var storage = multer.memoryStorage()
+var upload = multer({ storage: storage }) //careful w/ memory
 
 var jwtCheckConfig = {
   secret: new Buffer(process.env.AUTH0_SECRET, "base64"),
@@ -22,14 +26,13 @@ var jwtCheckNotReq = jwt(Object.assign(
   { credentialsRequired: false }
 ))
 
-
 // Post Routes
 
 router.param("post_id", postsController.postFinder);
 
 router.route("/posts")
   .get(postsController.index)
-  .post(jwtCheck, postsController.create);
+  .post(jwtCheck, upload.array('file[]', 5), postsController.create);
 
 router.route("/posts/:post_id")
   .get(postsController.show)

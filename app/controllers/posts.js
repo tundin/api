@@ -1,8 +1,30 @@
 var Post = require("../models/post");
-var Tag = require("../models/tag")
-var multiparty = require("multiparty");
-var azure = require("azure-storage");
-var blobService = azure.createBlobService();
+var Tag = require("../models/tag");
+var async = require("async")
+var AWS = require("aws-sdk")
+
+
+var mediaBucket = new AWS.S3({params: {Bucket: 'tundin-media'}})
+
+function uploadToS3(file, callback) {
+  mediaBucket
+    .upload({
+      ACL: 'public-read',
+      Body: file.buffer,
+      Key: `${file.uploader}/${file.originalname}`,
+      ContentType: file.mimetype
+    })
+    .send(function(err, data) {
+      // console.log(`START S3 response ${file.originalname}=======================`);
+      // console.log("err:", err);
+      // console.log("data:", data);
+      // console.log(`END S3 response ${file.originalname}=======================`);
+      if (err) return callback(err)
+      console.log("Hooray! no error. response data: ", data);
+      return callback(null, data)
+    })
+}
+
 
 var postsController = {
   postFinder: function(req, res, next, id){
@@ -18,6 +40,7 @@ var postsController = {
     })
   },
   index: function(req, res){ // TODO: refactor and lock down
+    console.log("query: ", req.query);
     if (Object.keys(req.query).length > 0){
       var searchQuery = {};
       if (req.query.posts) searchQuery._id = { $in : req.query.posts };
@@ -31,71 +54,33 @@ var postsController = {
     })
   },
   create: function(req, res) {
-
-    // File upload
-
-    var blobService = azure.createBlobService();
-    var form = new multiparty.Form();
-    var post = new Post({ author: req.user.sub });
-    var fileStatuses = {reqParsed: false};
-    console.log("req: ========================");
-
-
-    form.on("field", function(key, value) {
-      console.log(key, ":", value);
-      post[key] = (key === "tags") ? JSON.parse(value) : value;
-    });
-
-    form.on('part', function(part) {
-      if (!part.filename) return
-      fileStatuses[part.filename] = false;
-      var size = part.byteCount;
-      var name = req.user.sub + "/" + part.filename;
-      var container = 'blobContainerName';
-
-      // response sent after response recieved from azure -- this needs some work and the async could get messy quick
-      blobService.createBlockBlobFromStream("images", name, part, size, function(error, result, azureResponse) {
-        if (error) {
-          fileStatuses[part.filename] = {"error": error}
-        } else {
-          fileStatuses[part.filename] = ("https://tundinmedia.blob.core.windows.net/images/" + result);
-        }
-        var fileNames = Object.keys(fileStatuses)
-        if (fileStatuses.reqParsed && fileNames.every(function(fileName){return fileStatuses[fileName]})){
-
-          post.imgUrls = fileNames.filter(function(fileName){
-            var fileStatus = fileStatuses[fileName];
-            if (typeof fileStatus !== "string" && fileStatus !== "reqParsed" ){
-              res.status(500);
-              res.append("Warning", "Error in uploading " + fileName);
-              return false;
-            } else {
-              return true;
-            }
-          }).map(function(fileName){
-            return fileStatuses[fileName];
-          });
-          console.log("post pre-save:", post);
-          post.save(function(err, post){
-            if (err) {
-              res.status(500);
-              res.json(err);
-            } else {
-              res.status(200);
-              res.json(post);
-            }
-          });
-
-        }
-      });
-
-    });
-
-    form.on("close", function(){
-      fileStatuses.reqParsed = true;
+    var post = new Post({
+      title: req.body.title,
+      body: req.body.body,
+      tags: JSON.parse(req.body.tags),
+      author: req.user.sub
     })
-
-    form.parse(req);
+    if (!req.files || req.files.length === 0) {
+      return post.save(function(err, post){
+        console.log("post save arguments (no imgUrls): ", arguments);
+        if (err) return res.status(403).send(err).end()
+        return res.json(post)
+      })
+    }
+    // add uploader to file object
+    var files = req.files.map(file => Object.assign({}, file, {uploader: req.user.sub}))
+    async.map(files, uploadToS3, function(err, results) {
+      console.log("err:", err);
+      console.log("results:", results);
+      if (err) return res.status(500).send(err).end() // How to go about partial successes
+      console.log("CONSTRUCT NEW POST ==========================================");
+      post.imgUrls = results.map(result => result.Location)
+      post.save(function(err, post){
+        console.log("post save arguments (w. imgUrls): ", arguments);
+        if (err) return res.status(500).send(err).end()
+        return res.json(post)
+      })
+    })
   },
   show: function(req, res){
     res.json(req.post);
